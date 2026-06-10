@@ -24,10 +24,10 @@ from prettytable import PrettyTable
 
 
 def main():
-    """Print all environments registered in `isaac.lab_demo` extension."""
+    """Print all environments registered by this extension."""
     # print all the available environments
     table = PrettyTable(["S. No.", "Task Name", "Entry Point", "Config"])
-    table.title = "Available Environments in Isaac Lab Template Extension"
+    table.title = "Available Tabero Environments"
     # set alignment of table columns
     table.align["Task Name"] = "l"
     table.align["Entry Point"] = "l"
@@ -37,9 +37,10 @@ def main():
     index = 0
     # acquire all Isaac environments names
     for task_spec in gym.registry.values():
-        if "Template-" in task_spec.id:
+        env_cfg_entry_point = task_spec.kwargs.get("env_cfg_entry_point", "")
+        if "tac_manip" in str(env_cfg_entry_point):
             # add details to table
-            table.add_row([index + 1, task_spec.id, task_spec.entry_point, task_spec.kwargs["env_cfg_entry_point"]])
+            table.add_row([index + 1, task_spec.id, task_spec.entry_point, env_cfg_entry_point])
             # increment count
             index += 1
 

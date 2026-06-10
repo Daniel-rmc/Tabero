@@ -1,21 +1,38 @@
-ARG ISAACLAB_BASE_IMAGE_ARG
+ARG ISAACLAB_BASE_IMAGE_ARG=nvcr.io/nvidia/isaac-lab:2.3.2
 
-# we use the basic isaaclab image as the base
 FROM ${ISAACLAB_BASE_IMAGE_ARG} AS base
 
-ARG DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH_ARG
-ENV DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH=${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH_ARG}
+ARG DOCKER_TABERO_PATH_ARG=/workspace/tabero
+ENV DOCKER_TABERO_PATH=${DOCKER_TABERO_PATH_ARG} \
+    ACCEPT_EULA=Y \
+    PRIVACY_CONSENT=Y \
+    OMNI_KIT_ALLOW_ROOT=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 USER root
 
-# Copy the Isaac Lab Extension Template directory (files to exclude are defined in .dockerignore)
-COPY ../ ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}
+RUN printf '%s\n' '#!/usr/bin/env bash' 'exec /workspace/isaaclab/_isaac_sim/python.sh "$@"' > /usr/local/bin/python && \
+    chmod +x /usr/local/bin/python && \
+    ln -sf /usr/local/bin/python /usr/local/bin/python3 && \
+    printf '%s\n' '#!/usr/bin/env bash' 'exec /workspace/isaaclab/_isaac_sim/python.sh -m pip "$@"' > /usr/local/bin/pip && \
+    chmod +x /usr/local/bin/pip && \
+    ln -sf /usr/local/bin/pip /usr/local/bin/pip3
 
-# # Install whatever you need as additional dependencies.
-RUN bash -i -c "source ${HOME}/.bashrc && \
-    cd ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}/source/tac_manip && \
-    pip install -e ."
+# Copy the Tabero repository into the image. Files to exclude are defined in .dockerignore.
+COPY . ${DOCKER_TABERO_PATH}
 
-# make working directory as the Isaac Lab directory
-# this is the default directory when the container is run
-WORKDIR /workspace
+RUN bash -lc "source ${HOME}/.bashrc && \
+    cd ${DOCKER_TABERO_PATH} && \
+    python -m pip install --upgrade pip && \
+    python -m pip install \
+      -e source/tac_manip \
+      -e benchmarks/openpi/openpi-client \
+      pytest \
+      tyro \
+      h5py \
+      opencv-python-headless \
+      tqdm \
+      matplotlib"
+
+WORKDIR ${DOCKER_TABERO_PATH}

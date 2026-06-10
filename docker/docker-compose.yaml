@@ -1,7 +1,10 @@
-x-default-isaac-lab-template-environment: &default-isaac-lab-template-environment
+x-default-tabero-environment: &default-tabero-environment
   - OMNI_KIT_ALLOW_ROOT=1
+  - ACCEPT_EULA=Y
+  - PRIVACY_CONSENT=Y
+  - PYTHONUNBUFFERED=1
 
-x-default-isaac-lab-template-deploy: &default-isaac-lab-template-deploy
+x-default-tabero-deploy: &default-tabero-deploy
   resources:
     reservations:
       devices:
@@ -10,24 +13,41 @@ x-default-isaac-lab-template-deploy: &default-isaac-lab-template-deploy
           capabilities: [ gpu ]
 
 services:
-  isaac-lab-template:
+  tabero:
     env_file: .env.base
     build:
       context: ../
       dockerfile: docker/Dockerfile
       args:
         - ISAACLAB_BASE_IMAGE_ARG=${ISAACLAB_BASE_IMAGE}
-        - DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH_ARG=${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}
-    image: isaac-lab-template
-    container_name: isaac-lab-template
+        - DOCKER_TABERO_PATH_ARG=${DOCKER_TABERO_PATH}
+    image: tabero-isaaclab
+    container_name: tabero-isaaclab
     volumes:
       - type: bind
         source: ../
-        target: ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}
+        target: ${DOCKER_TABERO_PATH}
+      - isaac-cache-kit:/isaac-sim/kit/cache:rw
+      - isaac-cache-ov:/root/.cache/ov:rw
+      - isaac-cache-pip:/root/.cache/pip:rw
+      - isaac-cache-gl:/root/.cache/nvidia/GLCache:rw
+      - isaac-cache-compute:/root/.nv/ComputeCache:rw
+      - isaac-logs:/root/.nvidia-omniverse/logs:rw
+      - isaac-data:/root/.local/share/ov/data:rw
+      - isaac-docs:/root/Documents:rw
     network_mode: host
-    environment: *default-isaac-lab-template-environment
-    deploy: *default-isaac-lab-template-deploy
-    # This is the entrypoint for the container
+    environment: *default-tabero-environment
+    deploy: *default-tabero-deploy
     entrypoint: bash
     stdin_open: true
     tty: true
+
+volumes:
+  isaac-cache-kit:
+  isaac-cache-ov:
+  isaac-cache-pip:
+  isaac-cache-gl:
+  isaac-cache-compute:
+  isaac-logs:
+  isaac-data:
+  isaac-docs:
