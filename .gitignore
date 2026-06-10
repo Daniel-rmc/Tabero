@@ -26,6 +26,8 @@
 **/videos/*
 **/wandb/*
 **/.neptune/*
+.outputs/
+failure.jsonl
 docker/artifacts/
 *.tmp
 *.hdf5
@@ -42,6 +44,7 @@ benchmarks/datasets/libero/assembled_hdf5
 benchmarks/datasets/libero/replayed_demos
 benchmarks/datasets/libero/video_datasets
 benchmarks/datasets/libero/USD
+benchmarks/datasets/libero/lerobot_task_space
 benchmarks/datasets/tabero/video_datasets
 benchmarks/datasets/tabero/replayed_demos
 benchmarks/datasets/tabero/gentle_force/

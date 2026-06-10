@@ -10,6 +10,8 @@ docs/
 **/output/*
 **/outputs/*
 **/videos/*
+.datasets/
+.outputs/
 *.tmp
 # ignore docker
 docker/cluster/exports/
