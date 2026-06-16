@@ -12,6 +12,10 @@ ENV DOCKER_TABERO_PATH=${DOCKER_TABERO_PATH_ARG} \
 
 USER root
 
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN printf '%s\n' '#!/usr/bin/env bash' 'exec /workspace/isaaclab/_isaac_sim/python.sh "$@"' > /usr/local/bin/python && \
     chmod +x /usr/local/bin/python && \
     ln -sf /usr/local/bin/python /usr/local/bin/python3 && \
