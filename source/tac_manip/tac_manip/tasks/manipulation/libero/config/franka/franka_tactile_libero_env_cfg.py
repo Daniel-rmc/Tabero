@@ -3,11 +3,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
-from isaaclab.sensors import FrameTransformerCfg
+from isaaclab.sensors import CameraCfg, FrameTransformerCfg
 from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
 from isaaclab.utils import configclass
 from isaaclab.controllers.differential_ik_cfg import DifferentialIKControllerCfg
@@ -40,6 +41,25 @@ HYBRID_FORCE_HISTORY_LENGTH = 8
 #   we only record the *current* frame to keep datasets clean and lightweight.
 # - Any force-history window (e.g., H=8) should be constructed in offline conversion scripts.
 RECORD_FORCE_HISTORY_LENGTH = 1
+
+
+def _env_float_tuple(name: str, default: tuple[float, ...], length: int) -> tuple[float, ...]:
+    raw_value = os.getenv(name, "").strip()
+    if not raw_value:
+        return default
+    values = tuple(float(item.strip()) for item in raw_value.split(","))
+    if len(values) != length:
+        raise ValueError(f"{name} must contain {length} comma-separated floats, got: {raw_value}")
+    return values
+
+
+def _calibrate_tactile_eye_in_hand_camera(scene) -> None:
+    """Move the wrist RGB camera clear of the GelSight gripper shells."""
+    scene.eye_in_hand_cam.offset = CameraCfg.OffsetCfg(
+        pos=_env_float_tuple("TACTILE_EYE_IN_HAND_CAMERA_POS", (0.11, 0.0, 0.0), 3),
+        rot=_env_float_tuple("TACTILE_EYE_IN_HAND_CAMERA_ROT", (0.0, 0.707108, 0.707108, 0.0), 4),
+        convention="opengl",
+    )
 
 
 ##
@@ -316,6 +336,7 @@ class JointPositionTactileLiberoCameraEnvCfg(JointPositionLiberoCameraEnvCfg):
         self.scene.robot = FRANKA_PANDA_LIBERO_HIGH_PD_WITH_GSMINI_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.robot.init_state.pos = self.libero_config.robot_base_pos
         self.scene.robot.init_state.rot = self.libero_config.robot_base_ori
+        _calibrate_tactile_eye_in_hand_camera(self.scene)
 
         # add gelsight mini sensor with rgb and marker motion field output
         self.tactile_marker_0_cfg = FRAME_MARKER_CFG.copy()
@@ -495,6 +516,7 @@ class IKTactileLiberoCameraEnvCfg(IKLiberoCameraEnvCfg):
         self.scene.robot = FRANKA_PANDA_LIBERO_HIGH_PD_WITH_GSMINI_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.robot.init_state.pos = self.libero_config.robot_base_pos
         self.scene.robot.init_state.rot = self.libero_config.robot_base_ori
+        _calibrate_tactile_eye_in_hand_camera(self.scene)
 
         # add gelsight mini sensor with rgb and marker motion field output
         self.tactile_marker_0_cfg = FRAME_MARKER_CFG.copy()
