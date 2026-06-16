@@ -160,6 +160,21 @@ PY
 
 如果已经有四个 mp4，可以把两个 RGB 视频和两个 GelSight 触觉视频合成一个 2x2 视频。
 
+如果你已经跑了多个预览目录，推荐直接用项目脚本自动刷新所有成功样例的网页和 2x2 视频：
+
+```bash
+docker exec tabero-isaaclab bash -lc '
+cd /workspace/tabero
+python scripts/tools/build_tactile_preview_site.py --preview-root local_datasets/previews
+'
+```
+
+脚本会扫描 `local_datasets/previews/tactile/*`：
+
+- 有完整 HDF5、RGB 视频和 `markers_rgb` 触觉视频的目录会生成 `viewer/index.html` 与 `viewer/tactile_preview_2x2.mp4`。
+- replay 失败或输出不完整的目录会出现在 `local_datasets/previews/index.html`，状态标为 `FAILED`。
+- 总入口是 `local_datasets/previews/index.html`，用本地 HTTP 服务打开即可。
+
 在容器中运行：
 
 ```bash
