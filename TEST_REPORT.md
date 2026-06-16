@@ -66,28 +66,28 @@ docker compose --env-file docker/.env.base -f docker/docker-compose.yaml up -d t
 docker exec -it tabero-isaaclab bash
 ```
 
-本次已在宿主机下载完整数据到仓库本地 `.datasets/`，该目录已加入忽略规则，不会进入 Git 或 Docker build context：
+本次已在宿主机下载完整数据到仓库本地 `local_datasets/`，该目录已加入忽略规则，不会进入 Git 或 Docker build context：
 
 ```bash
 unset HF_ENDPOINT
 hf download NathanWu7/Isaaclab_Libero \
   --repo-type dataset \
-  --local-dir .datasets/Isaaclab_Libero
+  --local-dir local_datasets/Isaaclab_Libero
 
 hf download china-sae-robotics/Tactile_Manipulation_Dataset \
   --repo-type dataset \
-  --local-dir .datasets/Tactile_Manipulation_Dataset
+  --local-dir local_datasets/Tactile_Manipulation_Dataset
 ```
 
 当前数据链接使用相对 symlink，宿主机和容器内都可解析：
 
 ```bash
-ln -sfn ../../../.datasets/Isaaclab_Libero/assembled_hdf5 benchmarks/datasets/libero/assembled_hdf5
-ln -sfn ../../../.datasets/Isaaclab_Libero/replayed_demos benchmarks/datasets/libero/replayed_demos
-ln -sfn ../../../.datasets/Isaaclab_Libero/video_datasets benchmarks/datasets/libero/video_datasets
-ln -sfn ../../../.datasets/Isaaclab_Libero/USD benchmarks/datasets/libero/USD
-ln -sfn ../../../.datasets/Isaaclab_Libero/lerobot_task_space benchmarks/datasets/libero/lerobot_task_space
-ln -sfn ../../../../.datasets/Tactile_Manipulation_Dataset/assets/data source/tac_manip/tac_manip/assets/data
+ln -sfn ../../../local_datasets/Isaaclab_Libero/assembled_hdf5 benchmarks/datasets/libero/assembled_hdf5
+ln -sfn ../../../local_datasets/Isaaclab_Libero/replayed_demos benchmarks/datasets/libero/replayed_demos
+ln -sfn ../../../local_datasets/Isaaclab_Libero/video_datasets benchmarks/datasets/libero/video_datasets
+ln -sfn ../../../local_datasets/Isaaclab_Libero/USD benchmarks/datasets/libero/USD
+ln -sfn ../../../local_datasets/Isaaclab_Libero/lerobot_task_space benchmarks/datasets/libero/lerobot_task_space
+ln -sfn ../../../../local_datasets/Tactile_Manipulation_Dataset/assets/data source/tac_manip/tac_manip/assets/data
 ```
 
 注意：`find` 默认不跟随目录 symlink，验证数据量时应使用 `find -L`。
@@ -117,10 +117,10 @@ docker compose --env-file docker/.env.base -f docker/docker-compose.yaml run --r
 | OpenPI client tests | PASS | `21 passed in 0.23s`。 |
 | Replay CLI help | PASS | `python scripts/tools/replay_demos.py --help` 可正常输出参数。 |
 | Tabero env registry | PASS | `python scripts/list_envs.py` 可 headless 启动 Isaac Lab，并列出 23 个 `tac_manip` 环境。 |
-| LIBERO 数据下载 | PASS | `NathanWu7/Isaaclab_Libero` 完整 snapshot 已下载到 `.datasets/Isaaclab_Libero`，校验 13103 个文件、约 1.666 GiB，无缺失或大小不一致文件。 |
-| 触觉资源下载 | PASS | `china-sae-robotics/Tactile_Manipulation_Dataset` 已下载到 `.datasets/Tactile_Manipulation_Dataset`，`assets/data` 下 40 个资源文件可见。 |
+| LIBERO 数据下载 | PASS | `NathanWu7/Isaaclab_Libero` 完整 snapshot 已下载到 `local_datasets/Isaaclab_Libero`，校验 13103 个文件、约 1.666 GiB，无缺失或大小不一致文件。 |
+| 触觉资源下载 | PASS | `china-sae-robotics/Tactile_Manipulation_Dataset` 已下载到 `local_datasets/Tactile_Manipulation_Dataset`，`assets/data` 下 40 个资源文件可见。 |
 | 容器内数据可见性 | PASS | 容器内 `find -L` 可见 `assembled_hdf5=40`、`replayed_demos=40`、`video_datasets=4018`、`USD=121`、触觉资源 `40`。 |
-| Replay recollection smoke | PASS | `replay_demos_with_camera.py --dump_data` 从 `assembled_hdf5` 回放 `libero_goal task0 demo0`，执行 138 steps，并导出 `.datasets/replay_smoke/replayed_demos/libero_goal_task0_open_the_middle_drawer_of_the_cabinet_replayed_demo.hdf5`。 |
+| Replay recollection smoke | PASS | `replay_demos_with_camera.py --dump_data` 从 `assembled_hdf5` 回放 `libero_goal task0 demo0`，执行 138 steps，并导出 `local_datasets/replay_smoke/replayed_demos/libero_goal_task0_open_the_middle_drawer_of_the_cabinet_replayed_demo.hdf5`。 |
 | 下载版 replayed demo 回放 | PASS/WARN | `replay_demos.py` 可从下载版 `replayed_demos` 读取 `libero_goal task0 demo0` 并完整跑完 138 steps，命令退出码为 0；该 demo 在 `Isaac-Libero-Franka-IK-v0` 下未触发 success 条件，写入 `failure.jsonl`。这是任务成功率结果，不是环境或数据路径阻塞。 |
 
 `scripts/list_envs.py` 启动 Isaac Lab 时出现以下非致命 warning：

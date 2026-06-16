@@ -38,7 +38,7 @@ _build
 .lastformat
 
 # local repo
-.datasets/
+local_datasets/
 source/tac_manip/tac_manip/assets/data
 benchmarks/datasets/libero/assembled_hdf5
 benchmarks/datasets/libero/replayed_demos
