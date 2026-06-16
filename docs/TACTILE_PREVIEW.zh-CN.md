@@ -46,8 +46,8 @@ local_datasets/previews/tactile/<run_name>/
         demo_0_agentview_rgb.mp4
         demo_0_eye_in_hand_rgb.mp4
       tactile_outputs/
-        demo_0_gsmini_left_tactile_rgb.mp4
-        demo_0_gsmini_right_tactile_rgb.mp4
+        demo_0_gsmini_left_markers_rgb.mp4
+        demo_0_gsmini_right_markers_rgb.mp4
   viewer/
     tactile_preview_2x2.mp4
     index.html
@@ -57,7 +57,7 @@ local_datasets/previews/tactile/<run_name>/
 
 - `replayed_demos/`：replay 后导出的 HDF5 数据。
 - `videos/`：普通 RGB 相机视频。
-- `tactile_outputs/`：GelSight 触觉视频。
+- `tactile_outputs/`：GelSight 触觉视频。用于肉眼预览时推荐 `markers_rgb`，它会把 marker motion 叠加到触觉图像上；`tactile_rgb` 是纯 Taxim 光学图，很多无接触或弱接触帧只会像平滑彩色背景。
 - `viewer/`：合成视频和网页预览入口。
 
 ## 2. 跑一个触觉 replay 并生成视频
@@ -90,7 +90,7 @@ python scripts/tools/replay_demos_with_camera.py \
   --dump_data \
   --recorder_type 7dpf \
   --video \
-  --tactile_output_type tactile_rgb \
+  --tactile_output_type markers_rgb \
   --headless
 ```
 
@@ -171,8 +171,8 @@ mkdir -p "${PREVIEW_ROOT}/viewer"
 ffmpeg -y \
   -i "${PREVIEW_ROOT}/video_datasets/libero_object_task0/videos/demo_0_agentview_rgb.mp4" \
   -i "${PREVIEW_ROOT}/video_datasets/libero_object_task0/videos/demo_0_eye_in_hand_rgb.mp4" \
-  -i "${PREVIEW_ROOT}/video_datasets/libero_object_task0/tactile_outputs/demo_0_gsmini_left_tactile_rgb.mp4" \
-  -i "${PREVIEW_ROOT}/video_datasets/libero_object_task0/tactile_outputs/demo_0_gsmini_right_tactile_rgb.mp4" \
+  -i "${PREVIEW_ROOT}/video_datasets/libero_object_task0/tactile_outputs/demo_0_gsmini_left_markers_rgb.mp4" \
+  -i "${PREVIEW_ROOT}/video_datasets/libero_object_task0/tactile_outputs/demo_0_gsmini_right_markers_rgb.mp4" \
   -filter_complex "[0:v]scale=480:360,setpts=PTS-STARTPTS[v0];[1:v]scale=480:360,setpts=PTS-STARTPTS[v1];[2:v]scale=480:360,setpts=PTS-STARTPTS[v2];[3:v]scale=480:360,setpts=PTS-STARTPTS[v3];[v0][v1]hstack=inputs=2[top];[v2][v3]hstack=inputs=2[bottom];[top][bottom]vstack=inputs=2[out]" \
   -map "[out]" \
   -c:v libx264 \
@@ -237,12 +237,12 @@ cat > "${PREVIEW_ROOT}/viewer/index.html" <<'HTML'
         <video controls loop muted src="../video_datasets/libero_object_task0/videos/demo_0_eye_in_hand_rgb.mp4"></video>
       </section>
       <section>
-        <h2>Left GelSight Tactile RGB</h2>
-        <video controls loop muted src="../video_datasets/libero_object_task0/tactile_outputs/demo_0_gsmini_left_tactile_rgb.mp4"></video>
+        <h2>Left GelSight Markers RGB</h2>
+        <video controls loop muted src="../video_datasets/libero_object_task0/tactile_outputs/demo_0_gsmini_left_markers_rgb.mp4"></video>
       </section>
       <section>
-        <h2>Right GelSight Tactile RGB</h2>
-        <video controls loop muted src="../video_datasets/libero_object_task0/tactile_outputs/demo_0_gsmini_right_tactile_rgb.mp4"></video>
+        <h2>Right GelSight Markers RGB</h2>
+        <video controls loop muted src="../video_datasets/libero_object_task0/tactile_outputs/demo_0_gsmini_right_markers_rgb.mp4"></video>
       </section>
     </div>
   </main>
